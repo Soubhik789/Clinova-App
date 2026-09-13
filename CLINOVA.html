@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Clinova • Your Health, Our Priority</title>
+  <meta name="description" content="Clinova Health-Tech Platform powered by Cuma AI - 110+ Doctors, 10-Min MedExpress Delivery, Real TeleConsult, and GPS Route Navigation." />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Leaflet.js for GPS & Interactive Maps API -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+
+  <!-- Desktop Top Control Bar -->
+  <div class="desktop-top-bar">
+    <div class="brand-badge">
+      <a href="#" class="brand-badge-logo" id="brandLogoHome">
+        <div class="clinova-heart-icon">
+          <svg viewBox="0 0 48 48" width="30" height="30" fill="none">
+            <path d="M24 41.5 C24 41.5 6 30 6 17 C6 10.5 11 5.5 17.5 5.5 C21.2 5.5 24 7.5 24 7.5 C24 7.5 26.8 5.5 30.5 5.5 C37 5.5 42 10.5 42 17 C42 30 24 41.5 24 41.5 Z" stroke="#328287" stroke-width="3" fill="none"/>
+            <path d="M24 16 V28 M18 22 H30" stroke="#328287" stroke-width="3.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="brand-text-col">
+          <span class="brand-name">Clinova</span>
+          <span class="brand-tagline">Your Health, Our Priority</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="desktop-ticker">
+      <i data-lucide="mic"></i>
+      <span>WAKE WORD: "HEY CUKA" &bull; 110+ DOCTORS &bull; 10-MIN PHARMACY WITH UPI &bull; GPS ROUTE DIRECTIONS</span>
+    </div>
+
+    <div class="view-mode-controls">
+      <!-- Voice TTS Toggle -->
+      <button class="btn-mode-toggle" id="ttsAudioToggle" title="Audio Voice Feedback">
+        <i data-lucide="volume-2" id="ttsIcon"></i>
+        <span>Audio Guidance</span>
+      </button>
+
+      <!-- Auth Screen / App UI Toggle -->
+      <button class="btn-mode-toggle" id="btnToggleAuthView" title="Toggle Login Screen vs App UI">
+        <i data-lucide="key-round"></i>
+        <span id="txtAuthToggle">Login Screen</span>
+      </button>
+
+      <!-- Mode toggle between mobile frame and expanded desktop view -->
+      <button class="btn-mode-toggle active" id="btnDeviceViewToggle" title="Toggle Phone Frame View">
+        <i data-lucide="smartphone"></i>
+        <span>Mobile App Frame</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Outer Brand Banner Matching Screenshots -->
+  <div class="outer-brand-banner">
+    <div class="logo-lockup">
+      <svg class="logo-heart-svg" viewBox="0 0 48 48" width="36" height="36" fill="none">
+        <path d="M24 41.5 C24 41.5 6 30 6 17 C6 10.5 11 5.5 17.5 5.5 C21.2 5.5 24 7.5 24 7.5 C24 7.5 26.8 5.5 30.5 5.5 C37 5.5 42 10.5 42 17 C42 30 24 41.5 24 41.5 Z" stroke="#328287" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M24 16 V28 M18 22 H30" stroke="#328287" stroke-width="3.5" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-title">Clinova</span>
+    </div>
+    <span class="brand-sub">Your Health, Our Priority</span>
+  </div>
+
+  <!-- Mobile Device Frame Shell -->
+  <div class="mobile-frame-wrapper" id="mobileFrameWrapper">
+    <div class="smartphone-frame" id="smartphoneFrame">
+
+      <!-- Simulated Native Phone Push Notification Banner (SMS Arrival) -->
+      <div class="sms-push-banner hidden" id="smsPushBanner">
+        <div class="sms-banner-header">
+          <div class="sms-banner-left">
+            <div class="sms-app-badge">
+              <i data-lucide="message-square" style="width:12px; height:12px;"></i>
+            </div>
+            <span class="sms-app-title">MESSAGES</span>
+            <span class="sms-banner-time">&bull; now</span>
+          </div>
+          <button type="button" class="btn-dismiss-sms" id="btnDismissSmsBanner" title="Dismiss">&times;</button>
+        </div>
+        <div class="sms-banner-body">
+          <strong>Clinova Security:</strong> Your verification code is <span class="sms-banner-code-highlight" id="bannerOtpCode">582910</span>. Valid for 5 minutes.
+        </div>
+        <button type="button" class="sms-banner-action-btn" id="btnBannerAutoFill">
+          <i data-lucide="zap" style="width:13px; height:13px;"></i>
+          <span>Tap to Auto-Fill &amp; Open App</span>
+        </button>
+      </div>
+
+      <!-- ==================================================================
+           AUTH & LOGIN SCREEN (Matching Reference Photo Pixel-by-Pixel)
+           ================================================================== -->
+      <div class="clinova-auth-screen" id="screenAuth">
+        <!-- Watermark decorative graphics -->
+        <div class="auth-watermark-decor top-right">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <div class="auth-watermark-decor top-left">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div class="auth-watermark-decor mid-right">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M12 11v5M9.5 13.5h5"/></svg>
+        </div>
+        <div class="auth-watermark-decor bot-left">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <div class="auth-watermark-decor bot-right">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+
+        <!-- 1. Outer Logo Lockup -->
+        <div class="auth-outer-branding">
+          <div class="auth-logo-lockup">
+            <svg class="auth-heart-logo" viewBox="0 0 48 48" fill="none">
+              <path d="M24 41.5 C24 41.5 6 30 6 17 C6 10.5 11 5.5 17.5 5.5 C21.2 5.5 24 7.5 24 7.5 C24 7.5 26.8 5.5 30.5 5.5 C37 5.5 42 10.5 42 17 C42 30 24 41.5 24 41.5 Z" stroke="#2a8080" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <path d="M24 16 V28 M18 22 H30" stroke="#2a8080" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
+            <span class="auth-brand-name">Clinova</span>
+          </div>
+          <span class="auth-brand-tagline">Your Health, Our Priority</span>
+        </div>
+
+        <!-- 2. Centered Welcome Heading -->
+        <h1 class="auth-welcome-title">Welcome to Clinova</h1>
+
+        <!-- 3. Inner White Card -->
+        <div class="auth-inner-card">
+          <!-- Two Top Tabs -->
+          <div class="auth-card-tabs">
+            <button type="button" class="auth-card-tab active" id="tabAuthSignIn">Sign In</button>
+            <button type="button" class="auth-card-tab" id="tabAuthSignUp">Sign Up</button>
+          </div>
+
+          <!-- SIGN IN FORM VIEW -->
+          <form class="auth-form-view" id="formAuthSignIn">
+            <div class="auth-card-subheading" id="authGreetingText">Welcome back!</div>
+
+            <!-- Email or Phone Number -->
+            <div class="auth-field-group">
+              <input type="text" class="auth-field-input" id="authIdentifierInput" placeholder="Email or Phone Number" value="+91 98301 22910" required autocomplete="username" />
+            </div>
+
+            <!-- Password with eye icon -->
+            <div class="auth-field-group auth-password-wrap" id="wrapAuthPassword">
+              <input type="password" class="auth-field-input" id="authPasswordInput" placeholder="Password" value="Clinova@2026" autocomplete="current-password" />
+              <button type="button" class="btn-toggle-visibility" id="btnTogglePassword" title="Show/Hide Password">
+                <i data-lucide="eye-off" id="iconEyePassword" style="width:18px; height:18px;"></i>
+              </button>
+            </div>
+
+            <!-- Forgot Password Link -->
+            <div class="auth-forgot-link-row" id="rowForgotPassword">
+              <a href="#" class="auth-forgot-link" id="linkForgotPassword">Forgot Password?</a>
+            </div>
+
+            <!-- Sign In Main Button -->
+            <button type="submit" class="btn-auth-signin" id="btnSubmitSignIn">
+              <span id="txtSubmitSignIn">Sign In</span>
+            </button>
+
+            <!-- Create Account Secondary Button -->
+            <button type="button" class="btn-auth-create" id="btnSwitchToSignUp">Create Account</button>
+
+            <!-- Divider -->
+            <div class="auth-or-divider">
+              <span>Or sign in with</span>
+            </div>
+
+            <!-- Social Buttons -->
+            <div class="auth-social-row">
+              <button type="button" class="btn-social-item" id="btnSocialGoogle" title="Sign in with Google">
+                <svg class="social-svg-icon" viewBox="0 0 24 24">
+                  <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.4 1 3.5 3.6 1.6 7.4l3.7 2.9C6.2 7.4 8.8 5 12 5z"/>
+                  <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/>
+                  <path fill="#FBBC05" d="M5.3 14.7c-.2-.7-.4-1.5-.4-2.3 0-.8.2-1.6.4-2.3L1.6 7.2C.6 9.2 0 11.5 0 14s.6 4.8 1.6 6.8l3.7-2.9z"/>
+                  <path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3.2 0-5.8-2.1-6.8-5.1L1.5 16.1C3.4 20.1 7.4 23 12 23z"/>
+                </svg>
+              </button>
+
+              <button type="button" class="btn-social-item" id="btnSocialApple" title="Sign in with Apple">
+                <svg class="social-svg-icon" viewBox="0 0 24 24" fill="#000000">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.65-.79 1.1-1.9 1-3.01-.98.04-2.14.66-2.82 1.45-.6.69-1.13 1.82-.99 2.9.01 0 .08.01.12.01.95 0 2.04-.56 2.69-1.35z"/>
+                </svg>
+              </button>
+
+              <button type="button" class="btn-social-item" id="btnSocialFacebook" title="Sign in with Facebook">
+                <svg class="social-svg-icon" viewBox="0 0 24 24" fill="#1877F2">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Join Clinova Row -->
+            <div class="auth-join-row" id="rowJoinClinova">
+              <span>Join Clinova!</span>
+              <i data-lucide="chevron-right"></i>
+            </div>
+
+            <!-- Bottom Sign Up Button -->
+            <button type="button" class="btn-auth-signup" id="btnBottomSignUp">Sign Up</button>
+
+            <!-- Already have an account -->
+            <div class="auth-toggle-link-row">
+              Already have an account? <span class="auth-toggle-action" id="linkToSignInTab">Sign In</span>
+            </div>
+          </form>
+
+          <!-- OTP VERIFICATION VIEW (Activated after Phone number submit) -->
+          <div class="auth-otp-container" id="viewOtpContainer">
+            <div class="otp-header-row">
+              <button type="button" class="btn-otp-back" id="btnOtpBackToPhone" title="Back to Phone Entry">
+                <i data-lucide="arrow-left" style="width:18px; height:18px;"></i>
+              </button>
+              <span class="otp-title">Enter Verification Code</span>
+            </div>
+
+            <div class="otp-desc">
+              We've sent a 6-digit verification code to your phone message box:
+              <br/>
+              <span class="otp-phone-pill" id="displayOtpPhone">📱 +91 98301 22910</span>
+            </div>
+
+            <!-- 6-digit OTP Inputs -->
+            <div class="otp-inputs-grid">
+              <input type="text" maxlength="1" class="otp-box" id="otpBox1" autocomplete="one-time-code" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-box" id="otpBox2" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-box" id="otpBox3" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-box" id="otpBox4" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-box" id="otpBox5" inputmode="numeric" />
+              <input type="text" maxlength="1" class="otp-box" id="otpBox6" inputmode="numeric" />
+            </div>
+
+            <!-- Auto-fill chip & Resend timer -->
+            <div class="otp-meta-row">
+              <button type="button" class="btn-autofill-otp" id="btnAutoFillOtp">
+                <i data-lucide="zap" style="width:13px; height:13px;"></i>
+                <span id="txtAutoFill">Auto-Fill OTP</span>
+              </button>
+
+              <div class="otp-timer-text" id="otpCountdownWrap">
+                Resend in <strong id="otpTimerSeconds">00:45</strong>
+              </div>
+              <button type="button" class="btn-resend-link hidden" id="btnResendOtp">Resend OTP</button>
+            </div>
+
+            <!-- Verify and Open App Button -->
+            <button type="button" class="btn-auth-signin" id="btnVerifyOtpSubmit">
+              <i data-lucide="check-circle" style="width:18px; height:18px;"></i>
+              <span>Verify &amp; Open App</span>
+            </button>
+
+            <div class="auth-status-msg" id="otpStatusMsg"></div>
+          </div>
+
+          <!-- SIGN UP VIEW -->
+          <form class="auth-form-view hidden" id="formAuthSignUp">
+            <div class="auth-card-subheading">Create Your Account</div>
+            <div class="auth-field-group">
+              <input type="text" class="auth-field-input" id="signUpNameInput" placeholder="Full Name" value="John Doe" required />
+            </div>
+            <div class="auth-field-group">
+              <input type="text" class="auth-field-input" id="signUpPhoneInput" placeholder="Phone Number" value="+91 98301 22910" required />
+            </div>
+            <div class="auth-field-group">
+              <input type="email" class="auth-field-input" id="signUpEmailInput" placeholder="Email Address" value="john@clinova.health" required />
+            </div>
+            <div class="auth-field-group">
+              <input type="password" class="auth-field-input" id="signUpPasswordInput" placeholder="Create Password" value="Clinova@2026" required />
+            </div>
+
+            <button type="submit" class="btn-auth-signin" id="btnSubmitSignUp">
+              <span>Get OTP &amp; Register</span>
+            </button>
+
+            <div class="auth-toggle-link-row">
+              Already have an account? <span class="auth-toggle-action" id="linkSignUpToSignIn">Sign In</span>
+            </div>
+          </form>
+
+        </div><!-- /.auth-inner-card -->
+
+        <!-- 4. Outer Footer Terms -->
+        <div class="auth-outer-footer">
+          <a href="#" id="linkTerms">Terms of Service</a> &nbsp;|&nbsp; <a href="#" id="linkPrivacy">Privacy Policy</a>
+        </div>
+      </div><!-- /.clinova-auth-screen -->
+
+      <!-- Dynamic Island -->
+      <div class="phone-dynamic-island">
+        <div class="island-camera"></div>
+        <div class="island-pill-content">
+          <span class="island-cuka-dot"></span>
+          <span class="island-cuka-text" id="islandText">Say "Hey Cuka" &bull; 110+ Doctors</span>
+        </div>
+      </div>
+
+      <!-- Mobile Status Bar -->
+      <div class="mobile-status-bar">
+        <div class="status-time" id="mobileStatusTime">09:41</div>
+        <div class="status-icons">
+          <i data-lucide="signal" style="width:13px; height:13px;"></i>
+          <span class="status-5g">5G</span>
+          <i data-lucide="wifi" style="width:13px; height:13px;"></i>
+          <i data-lucide="battery-charging" style="width:15px; height:15px;"></i>
+        </div>
+      </div>
+
+      <!-- Main Scrollable Tab Viewport -->
+      <div class="tab-viewport">
+
+        <!-- ==================================================================
+             TAB 1: CUMA / CUKA AI ASSISTANT (Matching Screenshot 4)
+             ================================================================== -->
+        <div class="tab-view active" id="tabViewChat">
+          <!-- Screen Navy Header -->
+          <div class="app-screen-header">
+            <div class="screen-header-left">
+              <button class="btn-header-icon" id="btnBackToHome" title="Back"><i data-lucide="chevron-left"></i></button>
+              <div class="screen-header-title">
+                <span>Cuma AI Assistant</span>
+              </div>
+            </div>
+            <div class="screen-header-right">
+              <button class="btn-header-icon" id="btnChatInfo" title="Information"><i data-lucide="info"></i></button>
+              <button class="btn-header-icon" id="btnOpenCart" title="Pharmacy Cart" style="position:relative;">
+                <i data-lucide="file-check-2"></i>
+                <span class="badge-unread-dot" id="cartBadgeCount" style="position:absolute; top:-2px; right:-2px; font-size:9px; width:15px; height:15px; background:#10b981;">0</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Chat Screen Body Matching Photo Exactly -->
+          <div class="cuma-home-container">
+            <!-- 1. Greeting Block -->
+            <div class="cuma-greeting-block">
+              <h2 class="cuma-greeting-title">Hello, John 👋</h2>
+              <p class="cuma-greeting-sub">How can I help you today?</p>
+            </div>
+
+            <!-- 2. Centered Mascot & Label -->
+            <div class="cuma-mascot-center">
+              <img src="assets/cuma_robot.png" alt="Cuma AI Mascot" class="cuma-mascot-avatar-img" />
+              <span class="cuma-mascot-title">cuma</span>
+            </div>
+
+            <!-- 3. I Can Help You With Section -->
+            <div class="cuma-help-prompt">I can help you with</div>
+            <div class="cuma-options-2x2">
+              <button type="button" class="cuma-option-btn" id="btnOptSymptomCheck" data-query="Symptom Check: Check my symptoms: headache, body ache and fever">Symptom Check</button>
+              <button type="button" class="cuma-option-btn" id="btnOptFindDoctors" data-query="Find Doctors: Show verified specialists near Salt Lake Kolkata">Find Doctors</button>
+              <button type="button" class="cuma-option-btn" id="btnOptBookAppointment" data-query="Book Appointment: Schedule consultation with verified specialist">Book Appointment</button>
+              <button type="button" class="cuma-option-btn" id="btnOptGeneralHelp" data-query="General Help: How to consult and order medicines on Clinova">General Help</button>
+            </div>
+
+            <!-- 4. Tap the mic and speak Audio Wave Card -->
+            <div class="cuma-voice-hero-card">
+              <div class="cuma-voice-instruction" id="voiceStatusText">Tap the mic and speak...</div>
+              <div class="cuma-voice-controls-row">
+                <div class="voice-wave-side">
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                </div>
+                <button type="button" class="cuma-voice-main-mic" id="btnMicTrigger" title="Tap to speak">
+                  <i data-lucide="mic" style="width:24px; height:24px;"></i>
+                </button>
+                <div class="voice-wave-side">
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                  <span class="wave-bar"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Interactive Chat Messages Stream Matching Photo -->
+            <div class="chat-messages-stream" id="chatViewport">
+              <div class="chat-bubble user-bubble">
+                Hi Cuma, I have a persistent low-grade fever and a slight cough for the last few days. What should I do?
+              </div>
+
+              <div class="chat-bubble ai-bubble">
+                Hello! Based on your symptoms of low-grade fever and cough, it could be a common cold or other minor illness. I can help you check possible causes and home care tips.<br/><br/>
+                Would you like to check your symptoms, or are you looking for a verified clinic?
+              </div>
+
+              <div class="chat-bubble user-bubble">
+                Check my symptoms: headache, body ache and fever
+              </div>
+
+              <div class="chat-bubble ai-bubble">
+                Hello! For your <strong>Pediatrics &amp; Child Wellness</strong> inquiry, I have identified top specialists from our verified network: 1. <strong>Dr. Debashis Sen</strong> at Apollo Cradle &amp; Child Clinic (Fee: ₹600, Earliest: Tomorrow, 11:00 AM).
+              </div>
+            </div>
+
+            <!-- Multi-Doctor Recommendation Cards Container -->
+            <div id="optionsContainer" style="display:none; flex-direction:column; gap:8px; margin-top:8px;">
+              <h4 id="resultsHeading" style="font-size:12.5px; font-weight:700; color:var(--navy-primary); margin-top:4px;">
+                Verified Specialists for Your Symptoms:
+              </h4>
+              <div id="providersPingGrid" style="display:flex; flex-direction:column; gap:8px;"></div>
+            </div>
+
+            <!-- Chat Bottom Input Bar -->
+            <form class="chat-input-bar" id="cukaInputForm" style="margin-top:12px;">
+              <button type="button" class="btn-attach-clip" id="btnAttachDoc" title="Attach Document / Prescription">
+                <i data-lucide="paperclip"></i>
+              </button>
+
+              <div class="chat-input-wrap">
+                <input type="text" id="userInputField" class="chat-text-input" placeholder="Type your message here..." autocomplete="off" />
+                <button type="button" class="btn-mic-inside" id="btnMicTriggerSmall" title="Voice Input">
+                  <i data-lucide="mic"></i>
+                </button>
+              </div>
+
+              <button type="submit" class="btn-send-circle" id="btnSendChat" title="Send Message">
+                <i data-lucide="send"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             TAB: CLINIC LOCATOR (OpenStreetMap - Matching Reference Photo)
+             ================================================================== -->
+        <div class="tab-view" id="tabViewLocator">
+          <div class="clinic-locator-container">
+            <!-- Top Bar -->
+            <div class="locator-top-bar">
+              <h1 class="locator-header-title">Clinic Locator</h1>
+
+              <!-- Search Bar -->
+              <div class="locator-search-wrap">
+                <i data-lucide="search" class="locator-search-icon"></i>
+                <input type="text" id="locatorSearchInput" class="locator-search-input" placeholder="Search clinics, doctors..." autocomplete="off" />
+                <button type="button" class="locator-search-clear hidden" id="btnClearLocatorSearch" title="Clear Search">
+                  <i data-lucide="x" style="width:16px; height:16px;"></i>
+                </button>
+              </div>
+
+              <!-- Filter Pills (All, Hospitals, Clinics, Labs) -->
+              <div class="locator-filter-pills" id="locatorFilterPills">
+                <button type="button" class="filter-pill active" data-type="All">All</button>
+                <button type="button" class="filter-pill" data-type="Hospitals">Hospitals</button>
+                <button type="button" class="filter-pill" data-type="Clinics">Clinics</button>
+                <button type="button" class="filter-pill" data-type="Labs">Labs</button>
+              </div>
+            </div>
+
+            <!-- Map View Container with Floating Route & Buttons -->
+            <div class="locator-map-wrapper">
+              <div id="locatorMap" class="locator-leaflet-map"></div>
+
+              <!-- Floating Route Callout Badge on the Map (matching screenshot) -->
+              <div class="route-floating-badge" id="routeFloatingBadge" title="Click to focus on route">
+                <div class="route-badge-icon">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#1a73e8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 11.2 2 11.6 2 12v4c0 .6.4 1 1 1h2"/>
+                    <circle cx="7" cy="17" r="2"/>
+                    <path d="M9 17h6"/>
+                    <circle cx="17" cy="17" r="2"/>
+                  </svg>
+                </div>
+                <div class="route-badge-content">
+                  <div class="route-badge-title" id="routeBadgeTitle">Route to Dr. Ananya Clinic</div>
+                  <div class="route-badge-sub" id="routeBadgeSub">2.4 km • 8 mins</div>
+                </div>
+                <div class="route-badge-arrow"></div>
+              </div>
+
+              <!-- Floating Recenter Crosshair Button (top right) -->
+              <button type="button" class="map-floating-btn btn-recenter" id="btnRecenterLocatorMap" title="Recenter to My Location">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#475569" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="7"/>
+                  <line x1="12" y1="2" x2="12" y2="5"/>
+                  <line x1="12" y1="19" x2="12" y2="22"/>
+                  <line x1="2" y1="12" x2="5" y2="12"/>
+                  <line x1="19" y1="12" x2="22" y2="12"/>
+                </svg>
+              </button>
+
+              <!-- Floating Compass/Nav Arrow Button (bottom right above card) -->
+              <button type="button" class="map-floating-btn btn-compass" id="btnCompassLocator" title="Align Heading">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1a73e8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                </svg>
+              </button>
+
+              <!-- Turn-by-Turn Navigation Live HUD (Shown when user clicks Navigate) -->
+              <div class="locator-nav-hud hidden" id="locatorNavHud">
+                <div class="nav-hud-top">
+                  <div class="nav-hud-turn">
+                    <div class="nav-hud-icon">
+                      <i data-lucide="corner-up-right" style="width:20px; height:20px;"></i>
+                    </div>
+                    <div>
+                      <div class="nav-hud-instruction" id="navHudInstruction">In 400m, turn right onto EM Bypass</div>
+                      <div class="nav-hud-metrics" id="navHudMetrics">2.4 km • 8 mins • Normal Traffic</div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn-nav-hud-close" id="btnCloseNavHud" title="Exit Navigation">&times;</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bottom Clinic Detail Card (matching screenshot) -->
+            <div class="clinic-detail-card" id="clinicDetailCard">
+              <div class="clinic-card-content" id="clinicCardTrigger" title="Tap to view doctor profile">
+                <!-- Prescription / Medical Graphic Icon -->
+                <div class="clinic-icon-graphic">
+                  <svg viewBox="0 0 36 40" width="36" height="40" fill="none">
+                    <rect x="4" y="3" width="24" height="30" rx="4" stroke="#3b82f6" stroke-width="2.2" fill="#eff6ff"/>
+                    <line x1="9" y1="9" x2="20" y2="9" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="9" y1="14" x2="23" y2="14" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="9" y1="19" x2="17" y2="19" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="24" cy="27" r="7.5" fill="#10b981"/>
+                    <path d="M21.5 27 L23.5 29 L27 25" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+
+                <div class="clinic-info-wrap">
+                  <div class="clinic-title-row">
+                    <h3 class="clinic-name" id="cardClinicName">Dr. Ananya Clinic</h3>
+                    <i data-lucide="chevron-right" class="clinic-card-chevron"></i>
+                  </div>
+                  <div class="clinic-specialty" id="cardClinicSpecialty">General Physician</div>
+                  <div class="clinic-meta-row">
+                    <i data-lucide="map-pin" class="meta-icon"></i>
+                    <span id="cardClinicDistance">2.4 km • 8 mins</span>
+                  </div>
+                  <div class="clinic-status-row">
+                    <span class="status-dot-open"></span>
+                    <span class="status-text" id="cardClinicStatus">Open • Closes 9 PM</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Full Width Royal Blue Navigate Button -->
+              <button type="button" class="btn-locator-navigate" id="btnLocatorNavigate">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="#ffffff">
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+                <span>Navigate</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             TAB 2: APPOINTMENTS & DOCTOR PROFILE (Matching Screenshot 2)
+             ================================================================== -->
+        <div class="tab-view" id="tabViewDoctorProfile">
+
+          <!-- Screen Header Light with Logo -->
+          <div class="app-screen-header header-light">
+            <div class="screen-header-left">
+              <button class="btn-header-icon" id="btnDocBack" title="Back"><i data-lucide="chevron-left"></i></button>
+            </div>
+            <div class="header-clinova-brand">
+              <svg viewBox="0 0 48 48" width="22" height="22" fill="none">
+                <path d="M24 41.5 C24 41.5 6 30 6 17 C6 10.5 11 5.5 17.5 5.5 C21.2 5.5 24 7.5 24 7.5 C24 7.5 26.8 5.5 30.5 5.5 C37 5.5 42 10.5 42 17 C42 30 24 41.5 24 41.5 Z" stroke="#328287" stroke-width="3" fill="none"/>
+                <path d="M24 16 V28 M18 22 H30" stroke="#328287" stroke-width="3.5" stroke-linecap="round"/>
+              </svg>
+              <span>Clinova</span>
+            </div>
+            <div class="screen-header-right">
+              <button class="btn-header-icon" id="btnShareDoc" title="Share Doctor Profile"><i data-lucide="share-2"></i></button>
+              <button class="btn-header-icon" id="btnFavDoc" title="Save to Favorites"><i data-lucide="heart" style="color:#ef4444; fill:#ef4444;"></i></button>
+            </div>
+          </div>
+
+          <!-- Doctor Profile Content -->
+          <div class="doctor-profile-screen">
+            <!-- Doctor Hero Card with Gradient -->
+            <div class="doctor-hero-card" id="doctorHeroCard">
+              <div class="doctor-hero-top">
+                <div class="doctor-photo-wrap">
+                  <img src="assets/doctor_cardio.jpg" alt="Dr. Sarah Johnson" class="doctor-photo-img" id="profileDocPhoto" />
+                  <div class="badge-verified-pill">
+                    <i data-lucide="check" style="width:10px; height:10px; stroke-width:3;"></i> Verified
+                  </div>
+                </div>
+                <div class="doctor-hero-info">
+                  <h3 class="doc-name-title" id="profileDocName">Dr. Sarah Johnson</h3>
+                  <span class="doc-spec-sub" id="profileDocSpec">Cardiologist</span>
+                  <span class="doc-facility-sub" id="profileDocFacility">St. Mary's Heart Clinic</span>
+                </div>
+              </div>
+
+              <!-- Stats Row -->
+              <div class="doctor-stats-row">
+                <div class="stat-item">
+                  <span class="stat-val"><i data-lucide="star" class="star-icon" style="width:14px; height:14px;"></i> <span id="profileDocRating">4.9</span></span>
+                  <span class="stat-label">(250 Reviews)</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-val">15+</span>
+                  <span class="stat-label">Experience</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-val">5K+</span>
+                  <span class="stat-label">Consultations</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sub Tabs: About, Availability, Services, Reviews -->
+            <div class="doc-section-tabs">
+              <button class="doc-tab-btn active" data-subtab="about">About</button>
+              <button class="doc-tab-btn" data-subtab="availability">Availability</button>
+              <button class="doc-tab-btn" data-subtab="services">Services</button>
+              <button class="doc-tab-btn" data-subtab="reviews">Reviews</button>
+            </div>
+
+            <!-- Detail Card -->
+            <div class="doc-detail-card">
+              <p class="doc-bio-text" id="profileDocBio">
+                Dr. Sarah Johnson is a compassionate Cardiologist with over 15 years of experience specializing in preventive cardiology. She believes in personalized care and innovative treatments to ensure patient wellness.
+              </p>
+
+              <div class="clinic-location-box">
+                <div class="mini-map-preview" id="btnOpenMapFromProfile" title="Click to view full GPS route">
+                  <img src="assets/hospital_hero.jpg" alt="Location Map" />
+                  <div class="mini-map-pin"><i data-lucide="map-pin"></i></div>
+                </div>
+                <div class="clinic-address-col">
+                  <span class="clinic-address-title">Clinic Location</span>
+                  <span class="clinic-address-text" id="profileDocAddress">127 Mukundapur Main Rd, EM Bypass, Kolkata</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Consultation Options Selector (In-Person vs Video) -->
+            <div class="consultation-options-row">
+              <div class="consult-mode-card active" id="modeInPerson">
+                <div class="mode-icon"><i data-lucide="stethoscope"></i></div>
+                <div class="mode-info">
+                  <span class="mode-title">In-Person Visit</span>
+                  <span class="mode-fee" id="profileDocFee">₹650</span>
+                </div>
+              </div>
+
+              <div class="consult-mode-card" id="modeVideoConsult">
+                <div class="mode-icon"><i data-lucide="video"></i></div>
+                <div class="mode-info">
+                  <span class="mode-title">Video Consultation</span>
+                  <span class="mode-fee">₹500</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Available Soonest: Date & Time Picker -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <span class="slots-section-title">Available Soonest</span>
+
+              <!-- Horizontal Date Pills -->
+              <div class="date-pill-scroll" id="datePickerRow">
+                <button type="button" class="date-pill-btn active" data-date="Mon 15">
+                  <span class="date-day-name">Mon</span>
+                  <span class="date-day-num">15</span>
+                </button>
+                <button type="button" class="date-pill-btn" data-date="Tue 16">
+                  <span class="date-day-name">Tue</span>
+                  <span class="date-day-num">16</span>
+                </button>
+                <button type="button" class="date-pill-btn" data-date="Wed 17">
+                  <span class="date-day-name">Wed</span>
+                  <span class="date-day-num">17</span>
+                </button>
+                <button type="button" class="date-pill-btn" data-date="Thu 18">
+                  <span class="date-day-name">Thu</span>
+                  <span class="date-day-num">18</span>
+                </button>
+                <button type="button" class="date-pill-btn" data-date="Fri 19">
+                  <span class="date-day-name">Fri</span>
+                  <span class="date-day-num">19</span>
+                </button>
+                <button type="button" class="date-pill-btn" data-date="Sat 20">
+                  <span class="date-day-name">Sat</span>
+                  <span class="date-day-num">20</span>
+                </button>
+                <button type="button" class="date-pill-btn" data-date="Sun 21">
+                  <span class="date-day-name">Sun</span>
+                  <span class="date-day-num">21</span>
+                </button>
+              </div>
+
+              <!-- Time Slot Grid -->
+              <div class="time-slot-grid" id="timeSlotGrid">
+                <button type="button" class="time-slot-btn active" data-slot="9:00 AM">9:00 AM</button>
+                <button type="button" class="time-slot-btn" data-slot="9:30 AM">9:30 AM</button>
+                <button type="button" class="time-slot-btn" data-slot="10:00 AM">10:00 AM</button>
+                <button type="button" class="time-slot-btn" data-slot="10:30 AM">10:30 AM</button>
+                <button type="button" class="time-slot-btn" data-slot="2:00 PM">2:00 PM</button>
+                <button type="button" class="time-slot-btn" data-slot="2:30 PM">2:30 PM</button>
+              </div>
+            </div>
+
+            <!-- Book Appointment CTA Button -->
+            <button type="button" class="btn-book-primary" id="btnBookDoctorDirect">
+              <i data-lucide="calendar-check"></i> Book Appointment
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             TAB: PHARMACY (200+ Authentic Medicines with Real Indian Pricing)
+             ================================================================== -->
+        <div class="tab-view" id="tabViewPharmacy">
+          <div class="pharmacy-screen">
+            <!-- Header Row -->
+            <div class="pharmacy-top-row">
+              <div>
+                <div class="pharmacy-main-title">🏥 MedExpress</div>
+                <div class="pharmacy-sub">200+ medicines • 10-min delivery</div>
+              </div>
+              <button type="button" class="pharmacy-cart-bubble" id="btnOpenPharmacyCart" title="View Cart">
+                <i data-lucide="shopping-bag" style="width:16px; height:16px;"></i>
+                Cart
+                <span class="pharmacy-badge-counter" id="pharmCartCount">0</span>
+              </button>
+            </div>
+
+            <!-- Search -->
+            <div class="pharmacy-search-box">
+              <i data-lucide="search" style="position:absolute; left:14px; width:18px; height:18px; color:#94a3b8; pointer-events:none;"></i>
+              <input type="text" id="pharmSearchInput" class="pharmacy-search-input" placeholder="Search medicines, brands..." autocomplete="off" />
+            </div>
+
+            <!-- Category Pills -->
+            <div class="pharmacy-cat-bar" id="pharmCatBar">
+              <button type="button" class="pharm-cat-pill active" data-cat="All">All</button>
+              <button type="button" class="pharm-cat-pill" data-cat="Fever & Pain Relief">Fever & Pain</button>
+              <button type="button" class="pharm-cat-pill" data-cat="Antibiotics">Antibiotics</button>
+              <button type="button" class="pharm-cat-pill" data-cat="Acidity & Gas Relief">Acidity</button>
+              <button type="button" class="pharm-cat-pill" data-cat="Diabetes Care">Diabetes</button>
+              <button type="button" class="pharm-cat-pill" data-cat="Cardiac & Blood Pressure">Cardiac</button>
+              <button type="button" class="pharm-cat-pill" data-cat="Vitamins & Supplements">Vitamins</button>
+              <button type="button" class="pharm-cat-pill" data-cat="Respiratory & Allergy">Respiratory</button>
+              <button type="button" class="pharm-cat-pill" data-cat="Dermatology">Skin Care</button>
+              <button type="button" class="pharm-cat-pill" data-cat="First Aid & Disinfectant">First Aid</button>
+            </div>
+
+            <!-- Medicine Grid (populated by JS) -->
+            <div class="pharmacy-grid" id="pharmMedicineGrid">
+              <!-- Populated dynamically by CLINOVA-1.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             TAB 3: MAILBOX & HEALTH RECORDS (Matching Screenshot 1)
+             ================================================================== -->
+        <div class="tab-view" id="tabViewMailbox">
+          <!-- Screen Header Navy -->
+          <div class="app-screen-header">
+            <div class="screen-header-left">
+              <button class="btn-header-icon" title="Back"><i data-lucide="chevron-left"></i></button>
+              <span class="screen-header-title">Mailbox</span>
+            </div>
+            <div class="screen-header-right">
+              <button class="btn-header-icon" title="Search messages"><i data-lucide="search"></i></button>
+              <button class="btn-header-icon" title="Compose message"><i data-lucide="square-pen"></i></button>
+            </div>
+          </div>
+
+          <!-- Mailbox Screen Body -->
+          <div class="mailbox-screen">
+            <!-- Search Bar -->
+            <div class="mailbox-search-wrap">
+              <i data-lucide="search" style="width:16px; height:16px;"></i>
+              <input type="text" class="mailbox-search-input" id="mailboxSearchInput" placeholder="Search messages, senders..." />
+            </div>
+
+            <!-- Filter Pills Row (All, Doctors, Hospitals, Pharmacy, Support) -->
+            <div class="mailbox-filter-row" id="mailboxFilterRow">
+              <button type="button" class="filter-pill-item active" data-filter="all">
+                <div class="filter-circle-icon"><i data-lucide="layout-grid"></i></div>
+                <span class="filter-pill-label">All</span>
+              </button>
+
+              <button type="button" class="filter-pill-item" data-filter="doctors">
+                <div class="filter-circle-icon"><i data-lucide="user-round"></i></div>
+                <span class="filter-pill-label">Doctors</span>
+              </button>
+
+              <button type="button" class="filter-pill-item" data-filter="hospitals">
+                <div class="filter-circle-icon"><i data-lucide="building-2"></i></div>
+                <span class="filter-pill-label">Hospitals</span>
+              </button>
+
+              <button type="button" class="filter-pill-item" data-filter="pharmacy">
+                <div class="filter-circle-icon"><i data-lucide="pill"></i></div>
+                <span class="filter-pill-label">Pharmacy</span>
+              </button>
+
+              <button type="button" class="filter-pill-item" data-filter="support">
+                <div class="filter-circle-icon"><i data-lucide="headset"></i></div>
+                <span class="filter-pill-label">Support</span>
+              </button>
+            </div>
+
+            <!-- Messages List (Matching Screenshot 1) -->
+            <div class="messages-list-wrap" id="mailboxMessagesList">
+              <!-- Item 1: Dr. Anya Sharma -->
+              <div class="message-card-item" data-category="doctors" id="msgItemAnya">
+                <div class="msg-sender-avatar">
+                  <img src="assets/doctor_orthopedic.jpg" alt="Dr. Anya Sharma" />
+                </div>
+                <div class="msg-content-col">
+                  <div class="msg-header-row">
+                    <span class="msg-sender-name">Dr. Anya Sharma</span>
+                    <span class="msg-timestamp">10:30 AM</span>
+                  </div>
+                  <div class="msg-unread-row">
+                    <span style="font-size:11px; font-weight:700; color:var(--teal-primary);">Unread</span>
+                    <span class="badge-unread-dot">2</span>
+                  </div>
+                  <p class="msg-preview-text">Your recent blood work results are ready for review...</p>
+                  <span class="msg-tag-badge"><i data-lucide="file-check-2" style="width:11px; height:11px;"></i> Lab Report Attached</span>
+                </div>
+              </div>
+
+              <!-- Item 2: CityCare Clinic -->
+              <div class="message-card-item" data-category="hospitals" id="msgItemCityCare">
+                <div class="msg-sender-avatar" style="background:#e0f2fe; color:#0284c7;">
+                  <i data-lucide="building-2"></i>
+                </div>
+                <div class="msg-content-col">
+                  <div class="msg-header-row">
+                    <span class="msg-sender-name">CityCare Clinic</span>
+                    <span class="msg-timestamp">Yesterday</span>
+                  </div>
+                  <p class="msg-preview-text">Reminder: Appt. confirmation for your consult with Dr. Roy...</p>
+                  <span class="msg-tag-badge"><i data-lucide="calendar" style="width:11px; height:11px;"></i> Confirmed Visit</span>
+                </div>
+              </div>
+
+              <!-- Item 3: Clinova Pharmacy -->
+              <div class="message-card-item" data-category="pharmacy" id="msgItemPharmacy">
+                <div class="msg-sender-avatar" style="background:#ecfdf5; color:#059669;">
+                  <i data-lucide="pill"></i>
+                </div>
+                <div class="msg-content-col">
+                  <div class="msg-header-row">
+                    <span class="msg-sender-name">Clinova Pharmacy</span>
+                    <span class="msg-timestamp">Sep 12</span>
+                  </div>
+                  <p class="msg-preview-text">Your digital prescription is processed and ready for 10-Min delivery...</p>
+                  <span class="msg-tag-badge badge-attached"><i data-lucide="paperclip" style="width:12px; height:12px;"></i></span>
+                </div>
+              </div>
+
+              <!-- Item 4: Care Support -->
+              <div class="message-card-item" data-category="support" id="msgItemSupport">
+                <div class="msg-sender-avatar" style="background:#fef3c7; color:#d97706;">
+                  <i data-lucide="headset"></i>
+                </div>
+                <div class="msg-content-col">
+                  <div class="msg-header-row">
+                    <span class="msg-sender-name">Care Support</span>
+                    <span class="msg-timestamp">Sep 10</span>
+                  </div>
+                  <p class="msg-preview-text">Read: Your care messenger &amp; health assistant ticket #8921 is closed.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Floating Pill Button: + New Message -->
+            <button type="button" class="fab-new-msg" id="btnComposeNewMsg">
+              <i data-lucide="plus"></i> New Message
+            </button>
+          </div>
+        </div>
+
+        <!-- ==================================================================
+             TAB 4: PROFILE & SETTINGS (Matching Screenshot 3)
+             ================================================================== -->
+        <div class="tab-view" id="tabViewProfile">
+          <!-- Screen Header Navy -->
+          <div class="app-screen-header">
+            <div class="screen-header-left">
+              <button class="btn-header-icon" title="Back"><i data-lucide="chevron-left"></i></button>
+              <span class="screen-header-title">Profile &amp; Settings</span>
+            </div>
+          </div>
+
+          <!-- Profile Screen Body -->
+          <div class="profile-screen">
+            <!-- User Profile Header Card -->
+            <div class="user-profile-header-card">
+              <div class="user-card-top">
+                <div class="user-avatar-circle">
+                  <img src="assets/cuka_avatar.jpg" alt="Sarah Johnson" id="userProfileImg" />
+                </div>
+                <div class="user-text-details">
+                  <h3 class="user-name-title" id="profileUserName">Sarah Johnson</h3>
+                  <span class="user-contact-sub" id="profileUserEmail">sarah.j@email.com</span>
+                  <span class="user-contact-sub" id="profileUserPhone">+1 (555) 123-4567</span>
+                </div>
+              </div>
+
+              <button type="button" class="btn-edit-profile-teal" id="btnLoginModalTrigger">
+                Edit Profile
+              </button>
+            </div>
+
+            <!-- Settings Menu List (Matching Screenshot 3) -->
+            <div class="settings-menu-list">
+              <div class="setting-menu-row" id="menuPersonalInfo">
+                <div class="setting-left-content">
+                  <div class="setting-icon-box"><i data-lucide="user-check"></i></div>
+                  <div class="setting-text-col">
+                    <span class="setting-title">Personal Information</span>
+                    <span class="setting-sub">Account Details, ABHA ID</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="setting-chevron"></i>
+              </div>
+
+              <div class="setting-menu-row" id="menuHealthPreferences">
+                <div class="setting-left-content">
+                  <div class="setting-icon-box"><i data-lucide="stethoscope"></i></div>
+                  <div class="setting-text-col">
+                    <span class="setting-title">Health Preferences</span>
+                    <span class="setting-sub">Health Interests, Reminders</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="setting-chevron"></i>
+              </div>
+
+              <div class="setting-menu-row" id="menuNotifications">
+                <div class="setting-left-content">
+                  <div class="setting-icon-box"><i data-lucide="bell"></i></div>
+                  <div class="setting-text-col">
+                    <span class="setting-title">Notifications</span>
+                    <span class="setting-sub">Push &amp; Email Alerts</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="setting-chevron"></i>
+              </div>
+
+              <div class="setting-menu-row" id="menuPrivacy">
+                <div class="setting-left-content">
+                  <div class="setting-icon-box"><i data-lucide="shield-check"></i></div>
+                  <div class="setting-text-col">
+                    <span class="setting-title">Privacy &amp; Security</span>
+                    <span class="setting-sub">Data Access, Passcode</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="setting-chevron"></i>
+              </div>
+
+              <div class="setting-menu-row" id="menuDevices">
+                <div class="setting-left-content">
+                  <div class="setting-icon-box"><i data-lucide="watch"></i></div>
+                  <div class="setting-text-col">
+                    <span class="setting-title">Connected Devices</span>
+                    <span class="setting-sub">Fitness Trackers, Sensors</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="setting-chevron"></i>
+              </div>
+
+              <div class="setting-menu-row" id="menuLanguage">
+                <div class="setting-left-content">
+                  <div class="setting-icon-box"><i data-lucide="globe"></i></div>
+                  <div class="setting-text-col">
+                    <span class="setting-title">Language</span>
+                    <span class="setting-sub" id="currentLangLabel">English (বাংলা / हिंदी)</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="setting-chevron"></i>
+              </div>
+
+              <div class="setting-menu-row" id="menuSupport">
+                <div class="setting-left-content">
+                  <div class="setting-icon-box"><i data-lucide="help-circle"></i></div>
+                  <div class="setting-text-col">
+                    <span class="setting-title">Help &amp; Support</span>
+                    <span class="setting-sub">FAQs, Contact Us</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="setting-chevron"></i>
+              </div>
+
+              <div class="setting-menu-row" id="menuAbout">
+                <div class="setting-left-content">
+                  <div class="setting-icon-box"><i data-lucide="book-open"></i></div>
+                  <div class="setting-text-col">
+                    <span class="setting-title">About Clinova</span>
+                    <span class="setting-sub">Version 5.3 Clean, Legal</span>
+                  </div>
+                </div>
+                <i data-lucide="chevron-right" class="setting-chevron"></i>
+              </div>
+            </div>
+
+            <!-- Sign Out Button -->
+            <button type="button" class="btn-signout-outline" id="btnSignOut">
+              Sign Out
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /.tab-viewport -->
+
+      <!-- ==================================================================
+           BOTTOM NAVIGATION BAR (Matching Screenshots)
+           ================================================================== -->
+      <nav class="mobile-bottom-nav">
+        <!-- Home: Cuma AI Chat -->
+        <button class="nav-item-btn nav-item active" data-tab="tabViewChat" id="navTabHome" title="Home / Cuma AI">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <span class="nav-item-label">Home</span>
+        </button>
+
+        <!-- Map: Clinic Locator -->
+        <button class="nav-item-btn nav-item" data-tab="tabViewLocator" id="navTabMap" title="Clinic Locator (Map)">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span class="nav-item-label">Map</span>
+        </button>
+
+        <!-- Pharmacy: Medicine Store -->
+        <button class="nav-item-btn nav-item" data-tab="tabViewPharmacy" id="navTabPharmacy" title="Pharmacy / MedExpress">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-8 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+          </svg>
+          <span class="nav-item-label">Pharmacy</span>
+        </button>
+
+        <!-- Mail: Mailbox / Health Records -->
+        <button class="nav-item-btn nav-item" data-tab="tabViewMailbox" id="navTabMailbox" title="Mailbox & Health Records">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          <span class="nav-item-label">Mail</span>
+        </button>
+      </nav>
+
+    </div><!-- /.smartphone-frame -->
+  </div><!-- /.mobile-frame-wrapper -->
+
+  <!-- ==================================================================
+       FUNCTIONAL MODALS (Preserved Intact: Payment, Pharmacy, TeleConsult, Pass)
+       ================================================================== -->
+
+  <!-- 1. GPS & Directions Modal -->
+  <div class="modal-backdrop hidden" id="gpsModal">
+    <div class="modal-dialog mobile-sheet" style="max-height:90%;">
+      <div class="modal-header">
+        <div class="modal-badge"><i data-lucide="map-pin"></i> GPS HOSPITAL ROUTE DIRECTIONS</div>
+        <button class="btn-modal-close" id="btnCloseGpsModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="mapDoctorSearchInput" class="form-input" placeholder="Search hospital by name / specialty..." />
+          <button class="btn-secondary" id="btnRecenterGps" style="padding:8px 12px;"><i data-lucide="crosshair"></i></button>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
+          <span>Radius Filter: <strong id="radiusValueLabel">5.0 km</strong></span>
+          <input type="range" id="radiusRangeInput" min="1" max="25" step="0.5" value="5.0" style="accent-color:var(--teal-primary);" />
+        </div>
+
+        <!-- Leaflet Map Container -->
+        <div id="facilityMap"></div>
+
+        <!-- Route Directions HUD (when route active) -->
+        <div id="routeNavHud" class="hidden" style="background:var(--aqua-tint); padding:10px; border-radius:8px; border:1px solid var(--aqua-border);">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong id="routeDestName" style="color:var(--navy-primary); font-size:13px;">Apex Hospital</strong>
+            <button class="btn-modal-close" id="btnCloseRoute" style="font-size:16px;">&times;</button>
+          </div>
+          <div id="routeMetrics" style="font-size:11.5px; color:var(--teal-primary); font-weight:700; margin:3px 0;"></div>
+          <div id="routeStepsText" style="font-size:11px; color:var(--text-body);"></div>
+        </div>
+
+        <!-- Facilities List -->
+        <div id="facilitiesMiniList" style="display:flex; flex-direction:column; gap:8px; max-height:160px; overflow-y:auto;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MedExpress Pharmacy Cart Modal -->
+  <div class="modal-backdrop hidden" id="cartModal">
+    <div class="modal-dialog mobile-sheet">
+      <div class="modal-header">
+        <div class="modal-badge"><i data-lucide="shopping-bag"></i> 10-MIN EXPRESS PHARMACY CART</div>
+        <button class="btn-modal-close" id="btnCloseCartModal">&times;</button>
+      </div>
+      <div class="modal-body" id="cartModalBody">
+        <div class="cart-items-list" id="cartItemsList"></div>
+        <div class="cart-summary-card" id="cartSummaryCard">
+          <div class="sum-row"><span>Items Total:</span><strong id="cartSubtotal">₹0</strong></div>
+          <div class="sum-row"><span>Express Delivery (10 Min):</span><strong style="color:var(--teal-primary);">FREE</strong></div>
+          <div class="sum-row total"><span>Total Payable:</span><strong id="cartGrandTotal">₹0</strong></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btnClearCart">Clear</button>
+        <button class="btn-primary-confirm" id="btnCheckoutMedExpress">
+          <i data-lucide="credit-card"></i> Proceed to Payment
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Interactive Payment Gateway Modal (UPI, Card, COD) -->
+  <div class="modal-backdrop hidden" id="paymentModal">
+    <div class="modal-dialog mobile-sheet">
+      <div class="modal-header">
+        <div class="modal-badge"><i data-lucide="shield-check"></i> CLINOVA SECURE PAYMENT GATEWAY</div>
+        <button class="btn-modal-close" id="btnClosePaymentModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:var(--aqua-tint); padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span>Order Amount Payable:</span>
+          <strong id="payAmountDisplay" style="font-size:18px; color:var(--teal-primary);">₹0</strong>
+        </div>
+
+        <div class="payment-methods-stack">
+          <label class="pay-method-option">
+            <input type="radio" name="payMethod" value="UPI" checked />
+            <div class="pay-method-content">
+              <strong><i data-lucide="smartphone"></i> UPI Instant (GPay / PhonePe / Paytm)</strong>
+              <input type="text" id="upiIdInput" placeholder="Enter UPI ID (e.g. soubhik@okhdfcbank)" value="soubhik@okaxis" class="form-input" style="margin-top:6px;" />
+            </div>
+          </label>
+
+          <label class="pay-method-option">
+            <input type="radio" name="payMethod" value="CARD" />
+            <div class="pay-method-content">
+              <strong><i data-lucide="credit-card"></i> Credit / Debit Card</strong>
+              <small>Visa, Mastercard, RuPay, Amex</small>
+            </div>
+          </label>
+
+          <label class="pay-method-option">
+            <input type="radio" name="payMethod" value="COD" />
+            <div class="pay-method-content">
+              <strong><i data-lucide="banknote"></i> Cash on Delivery (10-Min Delivery)</strong>
+              <small>Pay at your doorstep upon medicine handover</small>
+            </div>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btnCancelPayment">Back</button>
+        <button class="btn-primary-confirm" id="btnConfirmPayAction">
+          <i data-lucide="lock"></i> Pay &amp; Dispatch Order
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Live TeleConsultation Video Room Modal -->
+  <div class="modal-backdrop hidden" id="teleconsultModal">
+    <div class="modal-dialog mobile-sheet teleconsult-dialog" style="max-height:92%;">
+      <div class="modal-header">
+        <div class="modal-badge"><i data-lucide="video"></i> WEBRTC TELECONSULT ROOM</div>
+        <button class="btn-modal-close" id="btnCloseTeleconsultModal">&times;</button>
+      </div>
+      <div class="video-call-viewport">
+        <img src="assets/doctor_cardio.jpg" alt="Doctor Stream" class="doctor-video-feed" id="doctorVideoFeed" />
+        <div class="patient-pip-view" id="patientPipView">
+          <video id="patientLiveWebcam" autoplay playsinline muted class="webcam-video-element"></video>
+          <div id="pipFallbackAvatar" style="display:none; width:100%; height:100%; align-items:center; justify-content:center; color:#fff;">
+            <i data-lucide="video-off"></i>
+          </div>
+        </div>
+      </div>
+      <div class="video-controls-bar">
+        <button class="btn-video-control" id="btnToggleCam" title="Turn Camera On/Off"><i data-lucide="video"></i></button>
+        <button class="btn-video-control" id="btnToggleMic" title="Mute/Unmute Mic"><i data-lucide="mic"></i></button>
+        <button class="btn-video-control" id="btnDownloadRx" title="Download Digital Prescription"><i data-lucide="file-down"></i></button>
+        <button class="btn-video-control btn-end-call" id="btnEndCall" title="End Call"><i data-lucide="phone-off"></i></button>
+      </div>
+      <div style="padding:14px; display:flex; flex-direction:column; gap:6px;">
+        <strong id="teleConsultDoctorName" style="color:var(--navy-primary); font-size:14px;">Dr. Sarah Johnson (Connected)</strong>
+        <p style="font-size:12px; color:var(--text-muted);">Encrypted consultation channel verified on Clinova Health-Tech network.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Appointment Booking Modal -->
+  <div class="modal-backdrop hidden" id="bookingModal">
+    <div class="modal-dialog mobile-sheet">
+      <div class="modal-header">
+        <div class="modal-badge"><i data-lucide="check-circle-2"></i> CONFIRM APPOINTMENT</div>
+        <button class="btn-modal-close" id="btnCloseModal">&times;</button>
+      </div>
+      <div class="modal-body" id="bookingModalBody"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btnCancelBooking">Modify</button>
+        <button class="btn-primary-confirm" id="btnConfirmBookingFinal">
+          <i data-lucide="check"></i> Confirm &amp; Issue Pass
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Digital Appointment Pass Modal -->
+  <div class="modal-backdrop hidden" id="passModal">
+    <div class="modal-dialog pass-dialog mobile-sheet">
+      <div class="pass-ticket" id="passTicketContent"></div>
+      <div class="modal-footer pass-footer">
+        <button class="btn-secondary" id="btnPrintPass"><i data-lucide="printer"></i> Print / Save</button>
+        <button class="btn-primary-confirm" id="btnClosePass"><i data-lucide="check"></i> Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Emergency Override Fullscreen HUD -->
+  <div class="emergency-hud-backdrop hidden" id="emergencyHud">
+    <div class="emergency-hud-panel">
+      <div class="hud-header">
+        <div class="hud-directive-badge">[EMERGENCY_BYPASS_TRUE]</div>
+        <h2 style="font-size:18px; margin-top:6px; font-weight:800;">CRITICAL MEDICAL OVERRIDE ACTIVATED</h2>
+        <p style="font-size:12px; opacity:0.9;">Standard booking halted &bull; Single closest trauma facility locked</p>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.15); padding:14px; border-radius:12px; display:flex; flex-direction:column; gap:6px;">
+        <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Closest Trauma ICU</span>
+        <strong style="font-size:15px;">CLINOVA EMERGENCY TRAUMA ICU &bull; MEDICA</strong>
+        <p style="font-size:11.5px; opacity:0.9;">127 Mukundapur Main Rd, EM Bypass, Kolkata (0.8 km, 3 mins)</p>
+        <span style="font-size:12px; font-weight:700; color:#a7f3d0;">4 Trauma ICU Beds Available Now</span>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.15); padding:14px; border-radius:12px; display:flex; flex-direction:column; gap:4px;">
+        <span style="font-size:11px; font-weight:700; text-transform:uppercase;">High-Priority Ambulance Webhook</span>
+        <span style="font-size:12px;">Unit: <strong>ALS #WB-04-E-8821</strong></span>
+        <span style="font-size:12px;">Paramedic Lead: <strong>S. Ganguly (ALS)</strong></span>
+        <span style="font-size:12px;">ETA: <strong id="ambulanceEtaCountdown">03:30 MIN</strong></span>
+      </div>
+
+      <div style="font-size:13px; font-style:italic; line-height:1.4; opacity:0.95;" id="emergencyReassuranceText">
+        "Please stay calm and sit down comfortably; our high-priority ambulance is already dispatched to your location and the nearest ICU trauma team is waiting for you."
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <a href="tel:108" class="btn-hud-call"><i data-lucide="phone-call"></i> Call Emergency 108 Direct</a>
+        <button class="btn-hud-dismiss" id="btnDismissHud">Exit Emergency Screen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. User Login / Edit Profile Modal -->
+  <div class="modal-backdrop hidden" id="loginModal">
+    <div class="modal-dialog mobile-sheet">
+      <div class="modal-header">
+        <div class="modal-badge"><i data-lucide="user"></i> PATIENT PROFILE &amp; SESSION</div>
+        <button class="btn-modal-close" id="btnCloseLoginModal">&times;</button>
+      </div>
+      <form class="modal-body" id="applicantLoginForm">
+        <div>
+          <label style="font-size:12px; font-weight:700;">Full Name:</label>
+          <input type="text" id="loginNameInput" class="form-input" value="Sarah Johnson" required />
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:700;">Phone Number:</label>
+          <input type="text" id="loginPhoneInput" class="form-input" value="+1 (555) 123-4567" required />
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:700;">OTP (6-Digit):</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="loginOtpInput" class="form-input" value="582910" style="letter-spacing:2px; font-weight:700;" />
+            <button type="button" class="btn-secondary" id="btnAutoOtp" style="padding:6px 12px;">Auto</button>
+          </div>
+        </div>
+        <div class="modal-footer" style="padding:10px 0 0;">
+          <button type="submit" class="btn-primary-confirm">Save Profile Changes</button>
+        </div>
+      </form>
+    </div>
+  <!-- Floating User Message Box Button (Allows viewing received verification SMS messages) -->
+  <button type="button" class="user-msg-box-trigger" id="btnOpenUserMessageBox" title="Open Received SMS Inbox">
+    <span class="user-msg-badge-dot"></span>
+    <i data-lucide="mail"></i>
+    <span>User Message Box (<span id="msgCountBadge">1</span>)</span>
+  </button>
+
+  <!-- User Message Box Modal Drawer -->
+  <div class="modal-backdrop hidden" id="userMessageBoxModal">
+    <div class="modal-dialog mobile-sheet msg-drawer-sheet">
+      <div class="modal-header">
+        <div class="modal-badge"><i data-lucide="message-square"></i> PHONE SMS INBOX</div>
+        <button class="btn-modal-close" id="btnCloseMessageBox">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size:12px; color:#64748b; margin-bottom:10px;">
+          Incoming SMS verification messages received on this device:
+        </div>
+        <div class="sms-inbox-list" id="smsInboxContainer">
+          <!-- Dynamic SMS items injected via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="CLINOVA-1.js"></script>
+</body>
+</html>
